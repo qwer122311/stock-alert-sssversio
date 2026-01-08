@@ -1,12 +1,16 @@
 import json
 import requests
 import yfinance as yf
+import os
 
 # ===============================
-# 🔐 텔레그램 정보 (네 걸로 교체)
+# 🔐 텔레그램 정보 (환경변수 사용)
 # ===============================
-BOT_TOKEN = "8376732547:AAHFiOcroCr4QzAvK69TDgP3L-629LGHCWM"
-CHAT_ID = "7662662191"
+BOT_TOKEN = os.environ.get("TG_TOKEN")
+CHAT_ID = os.environ.get("TG_CHAT_ID")
+
+if not BOT_TOKEN or not CHAT_ID:
+    raise ValueError("텔레그램 토큰 또는 CHAT_ID가 설정되지 않았습니다.")
 
 # ===============================
 # 📂 보유 정보 불러오기
@@ -25,7 +29,7 @@ for ticker, h in holdings.items():
     if data.empty:
         continue
 
-    price = data["Close"][-1]
+    price = data["Close"].iloc[-1]
     avg_price = h["avg_price"]
     diff = (price - avg_price) / avg_price * 100
 
