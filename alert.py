@@ -22,13 +22,11 @@ lines = ["[오늘의 행동 요약]\n"]
 for ticker, h in holdings.items():
     data = yf.Ticker(ticker).history(period="1d")
 
-    # 혹시 데이터 없을 때 대비
     if data.empty:
         continue
 
     price = data["Close"][-1]
     avg_price = h["avg_price"]
-
     diff = (price - avg_price) / avg_price * 100
 
     # ===============================
@@ -53,14 +51,9 @@ for ticker, h in holdings.items():
             action = "모으기 유지"
 
     elif ticker == "PEP":
-        if diff <= -6:
-            action = "모으기 유지 (배당 목적)"
-        elif diff >= 6:
-            action = "모으기 유지 (매도 안 함)"
-        else:
-            action = "모으기 유지"
+        action = "모으기 유지 (배당 목적)"
 
-    else:  # NVDA, ETN (장기 성장)
+    else:  # NVDA, ETN
         if diff <= -6:
             action = "모으기 유지 또는 50% 축소 고려"
         elif diff >= 6:
@@ -68,4 +61,17 @@ for ticker, h in holdings.items():
         else:
             action = "모으기 유지"
 
-    lines.append(f"{ti
+    lines.append(f"{ticker} {sign}\n→ {action}")
+
+# ===============================
+# 📩 텔레그램 전송
+# ===============================
+message = "\n\n".join(lines)
+
+requests.post(
+    f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+    data={
+        "chat_id": CHAT_ID,
+        "text": message
+    }
+)
